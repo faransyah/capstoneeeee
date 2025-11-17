@@ -1,6 +1,7 @@
 // login_state.dart
-import 'package:flutter/foundation.dart';
 
+
+part of 'login_cubit.dart';
 // Menggunakan 'sealed class' (fitur baru Dart) agar lebih aman
 @immutable
 sealed class LoginState {}

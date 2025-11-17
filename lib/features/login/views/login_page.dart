@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubit/login_cubit.dart';
-import '../cubit/login_state.dart';
+
 
 // Impor ini akan terpakai setelah listener-nya diperbaiki
 import 'package:capstone_flutter/features/admin/views/admin_page.dart';
-import 'package:capstone_flutter/features/home/user_page.dart';
+import 'package:capstone_flutter/features/user/views/user_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

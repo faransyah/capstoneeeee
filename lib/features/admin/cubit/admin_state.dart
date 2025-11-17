@@ -1,41 +1,35 @@
-// import 'package:flutter/foundation.dart';
-// import '../models/user_model.dart'; // Impor model dari folder models
+import 'package:flutter/foundation.dart';
 
-// @immutable
-// sealed class AdminState {
-//   const AdminState();
-// }
+@immutable
+sealed class AdminState {
+  const AdminState();
+}
 
-// // 1. Kondisi Awal / Kosong
-// final class AdminInitial extends AdminState {}
+final class AdminInitial extends AdminState {}
 
-// // 2. Kondisi Sedang Memuat Data dari API
-// final class AdminLoading extends AdminState {}
+final class AdminLoading extends AdminState {}
 
-// // 3. Kondisi Gagal Memuat Data
-// final class AdminFailure extends AdminState {
-//   final String error;
-//   const AdminFailure(this.error);
-// }
+final class AdminFailure extends AdminState {
+  final String error;
+  const AdminFailure(this.error);
+}
 
-// // 4. Kondisi Sukses Memuat Data
-// final class AdminSuccess extends AdminState {
-//   final List<User> allUsers;      // Daftar asli dari API
-//   final List<User> filteredUsers; // Daftar yang ditampilkan (setelah filter)
+final class AdminSuccess extends AdminState {
+  final List<Map<String, dynamic>> allUsers;
+  final List<Map<String, dynamic>> filteredUsers;
 
-//   const AdminSuccess({
-//     required this.allUsers,
-//     required this.filteredUsers,
-//   });
+  const AdminSuccess({
+    required this.allUsers,
+    required this.filteredUsers,
+  });
 
-//   // Fungsi helper 'copyWith' agar mudah update state saat mencari
-//   AdminSuccess copyWith({
-//     List<User>? allUsers,
-//     List<User>? filteredUsers,
-//   }) {
-//     return AdminSuccess(
-//       allUsers: allUsers ?? this.allUsers,
-//       filteredUsers: filteredUsers ?? this.filteredUsers,
-//     );
-//   }
-// }
+  AdminSuccess copyWith({
+    List<Map<String, dynamic>>? allUsers,
+    List<Map<String, dynamic>>? filteredUsers,
+  }) {
+    return AdminSuccess(
+      allUsers: allUsers ?? this.allUsers,
+      filteredUsers: filteredUsers ?? this.filteredUsers,
+    );
+  }
+}

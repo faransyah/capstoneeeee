@@ -31,8 +31,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_bloc: ^8.1.3
-  http: ^1.1.0
+  flutter_bloc: ^9.1.1
+  http: ^1.6.0
   shared_preferences: ^2.2.2  # <-- TAMBAHKAN INI (versi bisa beda)
   cupertino_icons: ^1.0.8
 
