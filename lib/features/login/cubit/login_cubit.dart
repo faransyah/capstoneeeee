@@ -45,11 +45,12 @@ class LoginCubit extends Cubit<LoginState> {
         final data = jsonDecode(response.body);
         final String token = data['access_token'];
         final String role = data['user']['role'];
+        final String name = data['user']['name'];
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
 
-        emit(LoginSuccess(role));
+        emit(LoginSuccess(role, name));
       } else if (response.statusCode == 401 ||
           response.statusCode == 400 ||
           response.statusCode == 422) {

@@ -16,8 +16,10 @@ final class LoginLoading extends LoginState {}
 // Kondisi jika login berhasil, sekarang membawa data 'role'
 final class LoginSuccess extends LoginState {
   final String role;
-  LoginSuccess(this.role);
+  final String name;
+  LoginSuccess(this.role, this.name);
 }
+
 
 // Kondisi jika login gagal (misal, password salah)
 final class LoginFailure extends LoginState {
