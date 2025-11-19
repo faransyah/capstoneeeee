@@ -58,4 +58,37 @@ class AdminCubit extends Cubit<AdminState> {
       emit(current.copyWith(filteredUsers: filtered));
     }
   }
+
+  // Pastikan argumen di dalam kurung HANYA (int id)
+  Future<void> deleteUser(int id) async {
+    try {
+      // Ambil token DI SINI, bukan dari parameter
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        emit(const AdminFailure("Token hilang. Silakan login ulang."));
+        return;
+      }
+
+      final response = await http.delete(
+        Uri.parse('${getBaseUrl()}/api/users/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Berhasil, refresh data
+        fetchUsers();
+      } else {
+        emit(AdminFailure("Gagal menghapus user. Kode: ${response.statusCode}"));
+        // Refresh agar list tetap muncul jika gagal
+        fetchUsers();
+      }
+    } catch (e) {
+      emit(AdminFailure("Error koneksi saat menghapus: $e"));
+    }
+  }
 }

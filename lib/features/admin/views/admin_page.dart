@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:capstone_flutter/features/add_user/views/add_user_page.dart';
 import 'package:capstone_flutter/features/login/views/login_page.dart';
-
-// ▼▼▼ PASTIKAN IMPOR INI ADA DAN TIDAK DUPLIKAT ▼▼▼
 import 'package:capstone_flutter/features/login/cubit/login_cubit.dart';
-// ▲▲▲ IMPOR INI MEMPERBAIKI ERROR 'LoginState' ANDA ▲▲▲
-
+// Pastikan import ini sesuai dengan lokasi file UpdateUserPage kamu
+import 'package:capstone_flutter/features/update_user/views/update_user_page.dart'; 
 import '../cubit/admin_cubit.dart';
 import '../cubit/admin_state.dart';
 
@@ -25,10 +23,8 @@ class _AdminPageState extends State<AdminPage> {
   @override
   void initState() {
     super.initState();
-    // Tambahkan listener untuk search bar
     _searchController.addListener(_onSearchChanged);
-    
-    // Panggil fetchUsers() saat halaman pertama kali dimuat
+    // Panggil data saat halaman dibuka
     context.read<AdminCubit>().fetchUsers();
   }
 
@@ -40,23 +36,15 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   void _onSearchChanged() {
-    // Panggil filterUsers di cubit setiap kali teks berubah
     context.read<AdminCubit>().filterUsers(_searchController.text);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Kita tambahkan 2 Listener:
-    // 1. (Luar) Listener untuk LoginCubit (Global Logout)
-    // 2. (Dalam) Listener untuk AdminCubit (Error Handling Halaman Ini)
-
-    // ▼▼▼ INI PERBAIKAN TYPO ANDA ('L' besar) ▼▼▼
+    // Listener untuk Logout Global
     return BlocListener<LoginCubit, LoginState>(
-      // 1. DENGARKAN GLOBAL LOGOUT
       listener: (context, state) {
         if (state is LoginInitial) {
-          // Jika LoginCubit kembali ke Initial (setelah logout)
-          // paksa kembali ke LoginPage
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -65,13 +53,16 @@ class _AdminPageState extends State<AdminPage> {
         }
       },
       child: Scaffold(
+        // Background Biru
+        backgroundColor: const Color(0xFF2E3A85),
         appBar: AppBar(
           title: const Text("Admin Dashboard"),
+          backgroundColor: const Color(0xFF2E3A85),
+          foregroundColor: Colors.white,
+          elevation: 0,
           actions: [
-            // Tombol logout sekarang memanggil LoginCubit
             IconButton(
               onPressed: () {
-                // Tampilkan dialog konfirmasi
                 showDialog(
                   context: context,
                   builder: (ctx) => AlertDialog(
@@ -87,7 +78,6 @@ class _AdminPageState extends State<AdminPage> {
                             style: TextStyle(color: Colors.red)),
                         onPressed: () {
                           Navigator.of(ctx).pop();
-                          // Panggil logout dari LoginCubit
                           context.read<LoginCubit>().logout();
                         },
                       ),
@@ -100,43 +90,38 @@ class _AdminPageState extends State<AdminPage> {
             )
           ],
         ),
-        // BlocConsumer untuk membangun UI dan menangani error AdminCubit
+        // Body dengan BlocConsumer untuk AdminCubit
         body: BlocConsumer<AdminCubit, AdminState>(
-          // 2. DENGARKAN ERROR LOKAL (TOKEN EXPIRED, DLL)
           listener: (context, state) {
             if (state is AdminFailure) {
-              // Jika fetchUsers gagal (misal token expired/tidak ada)
-              // Tampilkan pesan error...
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: Colors.red,
                   content: Text(state.error),
                 ),
               );
-              // ...dan panggil global logout jika errornya soal token
+              // Jika error karena token, logout paksa
               if (state.error.contains("Token") ||
                   state.error.contains("Sesi")) {
                 context.read<LoginCubit>().logout();
               }
             }
           },
-          // BUILDER untuk membangun UI
           builder: (context, state) {
             return RefreshIndicator(
-              // Tambahkan pull-to-refresh
               onRefresh: () => context.read<AdminCubit>().fetchUsers(),
               child: _buildBody(context, state),
             );
           },
         ),
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF2E3A85),
           onPressed: () async {
-            // Refresh data setelah kembali dari AddUserPage
             final result = await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AddUserPage()),
             );
-            // Jika AddUserPage mengembalikan 'true', refresh data
             if (result == true) {
               context.read<AdminCubit>().fetchUsers();
             }
@@ -149,12 +134,14 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   Widget _buildBody(BuildContext context, AdminState state) {
-    // Tampilkan loading di tengah
+    // Loading
     if (state is AdminLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
 
-    // Tampilkan error jika state = AdminFailure
+    // Error View
     if (state is AdminFailure) {
       return Center(
         child: Padding(
@@ -162,20 +149,29 @@ class _AdminPageState extends State<AdminPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Icon(Icons.error_outline, size: 60, color: Colors.white70),
+              const SizedBox(height: 16),
               Text(
                 'Oops! Terjadi kesalahan',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
               Text(
                 state.error,
-                style: TextStyle(color: Colors.grey[700]),
+                style: const TextStyle(color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => context.read<AdminCubit>().fetchUsers(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF2E3A85),
+                ),
                 child: const Text('Coba Lagi'),
               )
             ],
@@ -184,7 +180,7 @@ class _AdminPageState extends State<AdminPage> {
       );
     }
 
-    // Tampilkan data jika state = AdminSuccess
+    // Success View
     if (state is AdminSuccess) {
       final users = state.filteredUsers;
       return Padding(
@@ -192,28 +188,39 @@ class _AdminPageState extends State<AdminPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Search Bar
             TextField(
               controller: _searchController,
-              // Hapus onChanged dari sini karena sudah di handle listener
+              style: const TextStyle(color: Colors.black87),
               decoration: InputDecoration(
                 hintText: 'Cari user...',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
-                filled: true,
-                fillColor: Colors.grey[100],
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
+            
+            // Title
             Text(
               "Daftar User (${users.length})",
               style: Theme.of(context)
                   .textTheme
                   .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.bold),
+                  ?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
+            
+            // List User
             Expanded(
               child: users.isEmpty
                   ? Center(
@@ -221,10 +228,10 @@ class _AdminPageState extends State<AdminPage> {
                         _searchController.text.isEmpty
                             ? 'Belum ada data user.'
                             : 'User tidak ditemukan.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.white70),
                       ),
                     )
-                  // Pastikan ListView bisa di-scroll walaupun item sedikit
                   : ListView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: users.length,
@@ -232,39 +239,97 @@ class _AdminPageState extends State<AdminPage> {
                         final user = users[index];
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 6),
-                          elevation: 2,
+                          elevation: 0,
+                          // Card Putih Bening
+                          color: Colors.white.withOpacity(0.9),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
+                            
+                            // --- FOTO USER (user.png) ---
+                            leading: CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.transparent,
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/user.png', // Pastikan file ini ada
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.person, 
+                                        size: 30, color: Color(0xFF2E3A85));
+                                  },
+                                ),
+                              ),
+                            ),
+                            
+                            // Nama & Role
                             title: Text(user['name'] ?? '',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            subtitle: Text(user['role'] ?? ''),
+                                    fontWeight: FontWeight.bold, 
+                                    color: Colors.black87)),
+                            subtitle: Text(user['role'] ?? '',
+                                style: TextStyle(color: Colors.grey[700])),
+                            
+                            // Tombol Edit & Delete
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Tooltip(
-                                  message: 'Edit User',
-                                  child: IconButton(
-                                    icon: const Icon(Icons.edit_outlined),
-                                    color: Colors.blue.shade700,
-                                    onPressed: () {
-                                      // TODO: Logika Edit
-                                    },
-                                  ),
+                                // ▼▼▼ TOMBOL EDIT (UPDATE) SUDAH AKTIF ▼▼▼
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined),
+                                  color: Colors.blue.shade700,
+                                  onPressed: () async {
+                                    // Navigasi ke UpdateUserPage
+                                    final result = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => UpdateUserPage(user: user),
+                                      ),
+                                    );
+                                    
+                                    // Jika update berhasil (result == true), refresh data
+                                    if (result == true) {
+                                      context.read<AdminCubit>().fetchUsers();
+                                    }
+                                  },
                                 ),
-                                Tooltip(
-                                  message: 'Hapus User',
-                                  child: IconButton(
-                                    icon: const Icon(Icons.delete_outline),
-                                    color: Colors.red.shade700,
-                                    onPressed: () {
-                                      // TODO: Logika Hapus
-                                    },
-                                  ),
+                                
+                                // ▼▼▼ TOMBOL DELETE (HAPUS) SUDAH DIPERBAIKI ▼▼▼
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  color: Colors.red.shade700,
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text("Hapus User"),
+                                        content: Text("Yakin ingin mengapus user '${user['name']}'?"),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(ctx).pop(),
+                                            child: const Text("Batal"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(ctx).pop(); // Tutup dialog
+                                              
+                                              final userId = user['id'];
+                                              if (userId != null) {
+                                                context.read<AdminCubit>().deleteUser(userId);
+                                              }
+                                            },
+                                            child: const Text("Hapus", 
+                                                style: TextStyle(color: Colors.red)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -278,7 +343,7 @@ class _AdminPageState extends State<AdminPage> {
       );
     }
 
-    // State awal (AdminInitial)
-    return const Center(child: Text("Memuat..."));
+    return const Center(
+        child: CircularProgressIndicator(color: Colors.white));
   }
 }
