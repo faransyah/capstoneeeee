@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io'; // Wajib untuk File
 import 'package:flutter/foundation.dart';
 
 part 'report_state.dart';
@@ -21,6 +21,7 @@ class ReportCubit extends Cubit<ReportState> {
     required int apdLevel,
     required bool isCompliant,
     required List<String> missingItems,
+    required File imageFile, // <--- TAMBAHAN WAJIB: Parameter File Foto
   }) async {
     emit(ReportLoading());
 
@@ -33,29 +34,42 @@ class ReportCubit extends Cubit<ReportState> {
         return;
       }
 
-      final url = Uri.parse('${getBaseUrl()}/api/reports');
+      final uri = Uri.parse('${getBaseUrl()}/api/reports');
       
-      final body = {
-        'apd_level': apdLevel,
-        'is_compliant': isCompliant,
-        'missing_items': missingItems,
-        'image_path': null, // Nanti diisi kalau sudah ada upload foto
-      };
+      // ▼▼▼ PERUBAHAN PENTING: Pake MultipartRequest ▼▼▼
+      var request = http.MultipartRequest('POST', uri);
+      
+      // 1. Header
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json', 
+        // Jangan set Content-Type manual, biarkan Multipart yg atur boundary-nya
+      });
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
+      // 2. Data Teks (Fields)
+      // Multipart cuma terima String, jadi semua data harus di-convert ke String
+      request.fields['apd_level'] = apdLevel.toString();
+      request.fields['is_compliant'] = isCompliant ? '1' : '0'; // "true" / "false"
+      
+      // Array/List harus di-encode jadi JSON String biar bisa dikirim
+      request.fields['missing_items'] = jsonEncode(missingItems); 
 
-      if (response.statusCode == 201) {
+      // 3. Data File (Upload Gambar)
+      // 'image' adalah nama key yang akan dibaca oleh Laravel ($request->file('image'))
+      request.files.add(await http.MultipartFile.fromPath(
+        'image', 
+        imageFile.path
+      ));
+
+      // 4. Kirim Request
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      // 5. Cek Hasil
+      if (response.statusCode == 201 || response.statusCode == 200) {
         emit(ReportSuccess("Laporan berhasil disimpan!"));
       } else {
-        final msg = jsonDecode(response.body)['message'] ?? "Gagal kirim data";
+        final msg = jsonDecode(response.body)['message'] ?? "Gagal kirim data: ${response.statusCode}";
         emit(ReportFailure(msg));
       }
     } catch (e) {

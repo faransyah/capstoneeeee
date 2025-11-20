@@ -1,11 +1,9 @@
-// lib/features/user/views/user_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:capstone_flutter/features/login/cubit/login_cubit.dart';
 import 'package:capstone_flutter/features/login/views/login_page.dart';
 
-// Pastikan file ini ada
+// Import halaman detection
 import 'detection_page.dart'; 
 
 class UserPage extends StatelessWidget {
@@ -17,7 +15,6 @@ class UserPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<LoginCubit, LoginState>(
       listener: (context, state) {
-        // Logika Logout: Jika token hilang, kembali ke Login
         if (state is LoginInitial) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -27,17 +24,14 @@ class UserPage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        // ▼▼▼ 1. BACKGROUND BIRU SEPERTI ADMIN PAGE ▼▼▼
         backgroundColor: const Color(0xFF2E3A85),
         
         appBar: AppBar(
-          // ▼▼▼ 2. APPBAR MENYATU DENGAN BACKGROUND ▼▼▼
           backgroundColor: const Color(0xFF2E3A85),
-          foregroundColor: Colors.white, // Teks & Icon Putih
+          foregroundColor: Colors.white, 
           elevation: 0,
           title: Row(
             children: [
-              // Opsional: Menambahkan Icon User kecil di sebelah nama
               CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.white.withOpacity(0.2),
@@ -84,14 +78,13 @@ class UserPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // ▼▼▼ 3. TEKS JUDUL JADI PUTIH ▼▼▼
               const Text(
                 'Pilih Level Deteksi',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 24, 
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // Ubah warna jadi putih
+                  color: Colors.white, 
                 ),
               ),
               const SizedBox(height: 30),
@@ -140,8 +133,7 @@ class UserPage extends StatelessWidget {
     required Color color,
   }) {
     return Card(
-      elevation: 0, // Flat look seperti admin
-      // ▼▼▼ 4. CARD JADI PUTIH BENING (GLASSMORPHISM) ▼▼▼
+      elevation: 0, 
       color: Colors.white.withOpacity(0.9),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
@@ -158,7 +150,6 @@ class UserPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 20.0),
           child: Row(
             children: [
-              // Icon tetap berwarna agar kontras
               Icon(icon, size: 40, color: color),
               const SizedBox(width: 20),
               Column(
@@ -169,14 +160,14 @@ class UserPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 20, 
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87 // Teks dalam card tetap gelap
+                      color: Colors.black87 
                     )
                   ),
                   Text(
                     subtitle, 
                     style: TextStyle(
                       fontSize: 14, 
-                      color: Colors.grey[700] // Subtitle abu gelap
+                      color: Colors.grey[700] 
                     )
                   ),
                 ],
